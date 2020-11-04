@@ -1,0 +1,273 @@
+# Install minikube - Run on VM with a single node acting as a master and worker node
+
+$brew update
+$brew install hyperkit
+$brew install minikube
+
+$minikube
+
+## Tell Minikube to use hyperkit
+
+$minikube start --vm-driver=hyperkit
+
+$kubectl get nodes
+
+$minikube status
+## Know the version of kubectl that was pulled as it was dependency to minikube
+
+$kubectl get pods 
+
+$kubectl get service
+
+## In kubernates we dont work with pods but we work with deployments
+$ kubectl create deployment <name> --image=<docker-image> [--dry-run] [options]
+
+## Example of deploying nginx server
+
+$ kubectl create deployment arvind-nginx --image=nginx
+
+$ kubectl get deployment
+
+$ kubectl get replicaset
+
+# Status of different K8's components
+
+$kubectl get nodes | pod | services | replicaset | deployment
+
+## Debugging the pods 
+
+# Log to console 
+
+$kubectl logs <pod-name>
+
+$kubectl exec -it [pod name] -- bash
+
+# Get info about the pod
+
+$kubectl describe pod [pod name]
+
+## To delete the pod 
+
+$kubectl delete pod <pod-name>
+$kubectl delete pod arvind-nginx-7cd5cc6447-dk92c
+
+## Kubernates know when to apply the config file or when to update the config file
+
+## To create deployment from config file
+
+$ kubectl apply -f [file name]
+
+$ kubectl delete -f [file name]
+
+
+## To validate the service is attached to correct pod 
+$kubectl get service
+
+$kubectl describe service <service-name>
+
+
+
+
+DRMB-606XG8WP:kubernates arvind.penumaka$  kubectl describe service mongodb-service
+Name:              mongodb-service
+Namespace:         default
+Labels:            <none>
+Annotations:       kubectl.kubernetes.io/last-applied-configuration:
+                     {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"name":"mongodb-service","namespace":"default"},"spec":{"ports":[{"port":...
+Selector:          app=mongodb
+Type:              ClusterIP
+IP:                10.109.240.6
+Port:              <unset>  27017/TCP
+TargetPort:        27017/TCP
+Endpoints:         172.17.0.4:27017
+Session Affinity:  None
+Events:            <none>
+DRMB-606XG8WP:kubernates arvind.penumaka$ kubectl get pod -o wide
+NAME                                 READY   STATUS    RESTARTS   AGE   IP           NODE       NOMINATED NODE   READINESS GATES
+arvind-nginx-7cd5cc6447-26cq7        1/1     Running   0          17h   172.17.0.3   minikube   <none>           <none>
+mongodb-deployment-8f6675bc5-p59fs   1/1     Running   0          10m   172.17.0.4   minikube   <none>           <none>
+
+
+
+
+
+
+
+
+
+
+
+DRMB-606XG8WP:docker_kubernates arvind.penumaka$ kubectl create deployment arvind-nginx --image=nginx
+deployment.apps/arvind-nginx created
+
+DRMB-606XG8WP:docker_kubernates arvind.penumaka$ kubectl get pods 
+NAME                            READY   STATUS              RESTARTS   AGE
+arvind-nginx-7cd5cc6447-dk92c   0/1     ContainerCreating   0          6s
+
+DRMB-606XG8WP:docker_kubernates arvind.penumaka$ kubectl get pods 
+NAME                            READY   STATUS              RESTARTS   AGE
+arvind-nginx-7cd5cc6447-dk92c   0/1     ContainerCreating   0          13s
+
+DRMB-606XG8WP:docker_kubernates arvind.penumaka$ kubectl get deployments
+NAME           READY   UP-TO-DATE   AVAILABLE   AGE
+arvind-nginx   0/1     1            0           24s
+
+DRMB-606XG8WP:docker_kubernates arvind.penumaka$ kubectl get deployments
+NAME           READY   UP-TO-DATE   AVAILABLE   AGE
+arvind-nginx   1/1     1            1           62s
+
+DRMB-606XG8WP:docker_kubernates arvind.penumaka$ kubectl get service
+NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   4m24s
+
+DRMB-606XG8WP:docker_kubernates arvind.penumaka$ kubectl get replicaset
+NAME                      DESIRED   CURRENT   READY   AGE
+arvind-nginx-7cd5cc6447   1         1         1       2m11s
+
+DRMB-606XG8WP:docker_kubernates arvind.penumaka$ kubectl exec -it arvind-nginx-7cd5cc6447-dk92c -- bash
+root@arvind-nginx-7cd5cc6447-dk92c:/# exit
+exit
+
+
+
+DRMB-606XG8WP:docker_kubernates arvind.penumaka$ kubectl describe pod arvind-nginx-7cd5cc6447-dk92c
+Name:               arvind-nginx-7cd5cc6447-dk92c
+Namespace:          default
+Priority:           0
+PriorityClassName:  <none>
+Node:               minikube/192.168.64.2
+Start Time:         Mon, 02 Nov 2020 20:28:46 -0600
+Labels:             app=arvind-nginx
+                    pod-template-hash=7cd5cc6447
+Annotations:        <none>
+Status:             Running
+IP:                 172.17.0.3
+Controlled By:      ReplicaSet/arvind-nginx-7cd5cc6447
+Containers:
+  nginx:
+    Container ID:   docker://4dbc02d59d997b91034553faca3a8435b99a4a08dd6ffde12bfe51ff493cf053
+    Image:          nginx
+    Image ID:       docker-pullable://nginx@sha256:ed7f815851b5299f616220a63edac69a4cc200e7f536a56e421988da82e44ed8
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Mon, 02 Nov 2020 20:29:10 -0600
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-5kgdn (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  default-token-5kgdn:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-5kgdn
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  8m31s  default-scheduler  Successfully assigned default/arvind-nginx-7cd5cc6447-dk92c to minikube
+  Normal  Pulling    8m30s  kubelet, minikube  Pulling image "nginx"
+  Normal  Pulled     8m8s   kubelet, minikube  Successfully pulled image "nginx" in 22.367596116s
+  Normal  Created    8m7s   kubelet, minikube  Created container nginx
+  Normal  Started    8m7s   kubelet, minikube  Started container nginx
+  
+
+  arvind.penumaka$ kubectl get nodes
+  NAME       STATUS   ROLES    AGE   VERSION
+  minikube   Ready    master   17h   v1.19.2
+  
+  
+  DRMB-606XG8WP:~ arvind.penumaka$ kubectl describe node
+  Name:               minikube
+  Roles:              master
+  Labels:             beta.kubernetes.io/arch=amd64
+                      beta.kubernetes.io/os=linux
+                      kubernetes.io/arch=amd64
+                      kubernetes.io/hostname=minikube
+                      kubernetes.io/os=linux
+                      minikube.k8s.io/commit=2c82918e2347188e21c4e44c8056fc80408bce10
+                      minikube.k8s.io/name=minikube
+                      minikube.k8s.io/updated_at=2020_11_02T20_25_33_0700
+                      minikube.k8s.io/version=v1.14.2
+                      node-role.kubernetes.io/master=
+  Annotations:        kubeadm.alpha.kubernetes.io/cri-socket: /var/run/dockershim.sock
+                      node.alpha.kubernetes.io/ttl: 0
+                      volumes.kubernetes.io/controller-managed-attach-detach: true
+  CreationTimestamp:  Mon, 02 Nov 2020 20:25:30 -0600
+  Taints:             <none>
+  Unschedulable:      false
+  Conditions:
+    Type             Status  LastHeartbeatTime                 LastTransitionTime                Reason                       Message
+    ----             ------  -----------------                 ------------------                ------                       -------
+    MemoryPressure   False   Tue, 03 Nov 2020 13:30:02 -0600   Mon, 02 Nov 2020 20:25:26 -0600   KubeletHasSufficientMemory   kubelet has sufficient memory available
+    DiskPressure     False   Tue, 03 Nov 2020 13:30:02 -0600   Mon, 02 Nov 2020 20:25:26 -0600   KubeletHasNoDiskPressure     kubelet has no disk pressure
+    PIDPressure      False   Tue, 03 Nov 2020 13:30:02 -0600   Mon, 02 Nov 2020 20:25:26 -0600   KubeletHasSufficientPID      kubelet has sufficient PID available
+    Ready            True    Tue, 03 Nov 2020 13:30:02 -0600   Mon, 02 Nov 2020 20:25:44 -0600   KubeletReady                 kubelet is posting ready status
+  Addresses:
+    InternalIP:  192.168.64.2
+    Hostname:    minikube
+  Capacity:
+   cpu:                2
+   ephemeral-storage:  17784752Ki
+   hugepages-2Mi:      0
+   memory:             3934816Ki
+   pods:               110
+  Allocatable:
+   cpu:                2
+   ephemeral-storage:  17784752Ki
+   hugepages-2Mi:      0
+   memory:             3934816Ki
+   pods:               110
+  System Info:
+   Machine ID:                 92d702aad80243e9a8e97202af774cbf
+   System UUID:                bbe511eb-0000-0000-abac-acbc32805537
+   Boot ID:                    959be967-6f24-43e9-895c-76596885bb43
+   Kernel Version:             4.19.114
+   OS Image:                   Buildroot 2020.02.6
+   Operating System:           linux
+   Architecture:               amd64
+   Container Runtime Version:  docker://19.3.12
+   Kubelet Version:            v1.19.2
+   Kube-Proxy Version:         v1.19.2
+  Non-terminated Pods:         (8 in total)
+    Namespace                  Name                                CPU Requests  CPU Limits  Memory Requests  Memory Limits  AGE
+    ---------                  ----                                ------------  ----------  ---------------  -------------  ---
+    default                    arvind-nginx-7cd5cc6447-26cq7       0 (0%)        0 (0%)      0 (0%)           0 (0%)         16h
+    kube-system                coredns-f9fd979d6-c6rng             100m (5%)     0 (0%)      70Mi (1%)        170Mi (4%)     17h
+    kube-system                etcd-minikube                       0 (0%)        0 (0%)      0 (0%)           0 (0%)         17h
+    kube-system                kube-apiserver-minikube             250m (12%)    0 (0%)      0 (0%)           0 (0%)         17h
+    kube-system                kube-controller-manager-minikube    200m (10%)    0 (0%)      0 (0%)           0 (0%)         17h
+    kube-system                kube-proxy-ndx77                    0 (0%)        0 (0%)      0 (0%)           0 (0%)         17h
+    kube-system                kube-scheduler-minikube             100m (5%)     0 (0%)      0 (0%)           0 (0%)         17h
+    kube-system                storage-provisioner                 0 (0%)        0 (0%)      0 (0%)           0 (0%)         17h
+  Allocated resources:
+    (Total limits may be over 100 percent, i.e., overcommitted.)
+    Resource           Requests    Limits
+    --------           --------    ------
+    cpu                650m (32%)  0 (0%)
+    memory             70Mi (1%)   170Mi (4%)
+    ephemeral-storage  0 (0%)      0 (0%)
+  Events:
+    Type    Reason                   Age                From                  Message
+    ----    ------                   ----               ----                  -------
+    Normal  NodeHasSufficientMemory  17h (x5 over 17h)  kubelet, minikube     Node minikube status is now: NodeHasSufficientMemory
+    Normal  NodeHasNoDiskPressure    17h (x4 over 17h)  kubelet, minikube     Node minikube status is now: NodeHasNoDiskPressure
+    Normal  NodeHasSufficientPID     17h (x4 over 17h)  kubelet, minikube     Node minikube status is now: NodeHasSufficientPID
+    Normal  Starting                 17h                kubelet, minikube     Starting kubelet.
+    Normal  NodeHasSufficientMemory  17h                kubelet, minikube     Node minikube status is now: NodeHasSufficientMemory
+    Normal  NodeHasNoDiskPressure    17h                kubelet, minikube     Node minikube status is now: NodeHasNoDiskPressure
+    Normal  NodeHasSufficientPID     17h                kubelet, minikube     Node minikube status is now: NodeHasSufficientPID
+    Normal  NodeAllocatableEnforced  17h                kubelet, minikube     Updated Node Allocatable limit across pods
+    Normal  Starting                 17h                kube-proxy, minikube  Starting kube-proxy.
+    Normal  NodeReady                17h                kubelet, minikube     Node minikube status is now: NodeReady
+
